@@ -1,23 +1,30 @@
 import logo from "./logo.svg";
+import Table from "./Table";
+import dbPull from "./api";
 import "./App.css";
+import { useState, useEffect } from "react";
 
-function App() {
+const renderLogo = () => {
+  return <img src={logo} className="App-logo" alt="logo" />;
+};
+
+const App = () => {
+  const [success] = useState(true);
+
+  useEffect(() => {
+    console.log("fetching from db...");
+    dbPull("/hello");
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+        {renderLogo()}
         <h1>OpenAcademia</h1>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Enter
-        </a>
+        {success ? <Table table /> : null}
       </header>
     </div>
   );
-}
+};
 
 export default App;
