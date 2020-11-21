@@ -9,11 +9,14 @@ const renderLogo = () => {
 };
 
 const App = () => {
-  const [success] = useState(true);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     console.log("fetching from db...");
-    dbPull("/hello");
+    dbPull("/table/User", (json, _) => {
+      setSuccess(true);
+      console.log(json);
+    });
   }, []);
 
   return (
