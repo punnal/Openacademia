@@ -12,7 +12,7 @@ DB = sqlite3.connect("openacademia.db")
 CURSOR = DB.cursor()
 
 def getID():
-    return 1234567
+    return 1
 
 def getSessionID():
     return secrets.token_urlsafe(64)
@@ -35,7 +35,10 @@ def exec_query():
     data = request.data.decode('utf-8')
     data = (json.loads(data))["data"]
     print("data: ", data)
-    resp = CURSOR.execute(data["query"]).fetchall()
+    cursor = CURSOR.execute(data["query"])
+    names = list(map(lambda x: x[0], cursor.description))
+    rows = cursor.fetchall()
+    resp = {"colums": names, "Rows": rows}
     print("response: ", resp)
     return jsonify(resp)
 
@@ -59,7 +62,7 @@ def signup():
         print("response: ", resp)
         return jsonify(resp)
     resp = {"Success": False, "Msg": "User already exists"}
-    return resp
+    return jsonify(resp)
  
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
@@ -75,7 +78,7 @@ def signin():
         return jsonify(resp)
     else:
         resp = {"Success": False, "Msg": "Wrong password or account does not exists"}
-        return resp
+        return jsonify(resp)
   
 
 if __name__ == "__main__":
