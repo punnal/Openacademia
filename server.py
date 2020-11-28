@@ -1,6 +1,6 @@
 import sqlite3
 from contextlib import closing
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 
 app = Flask(__name__, static_folder="../static/dist",
             template_folder="../static")
@@ -25,33 +25,28 @@ def getTable(table):
 
 
 @app.route('/query', methods=['GET', 'POST'])
-def parse_request():
+def exec_query():
     data = request.data
     print("data: ", data)
     resp = CURSOR.execute(data.query).fetchall()
     print("response: ", resp)
     return jsonify(resp)
 
-# @app.route('/signup', methods=['GET', 'POST'])
-# def parse_request():
-#     data = request.data
-#     print("data: ", data)
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    data = request.data
+    print("data: ", data)
     
-#     result = CURSOR.execute(f"
-#         SELECT email FROM 
-#                             "
-#     )
+   
+    resp = CURSOR.execute(f"SELECT {data.email} FROM User WHERE email={data.email}").fetchall()
 
-#     userID = getID()
+    userID = getID()
 
-#     resp = CURSOR.execute(f"
-#         INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)]
-#         VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});
-#         ").fetchall()
+    resp = CURSOR.execute(f"INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)] VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});").fetchall()
 
-#     resp = {"Success": True}
-#     print("response: ", resp)
-#     return jsonify(resp)
+    resp = {"Success": True}
+    print("response: ", resp)
+    return jsonify(resp)
    
 
 if __name__ == "__main__":
