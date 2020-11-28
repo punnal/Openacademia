@@ -6,7 +6,6 @@ import Navbar from "react-bootstrap/Navbar";
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
 import Nav from "react-bootstrap/Nav";
-import dbPull from "./dbPull";
 import dbPush from "./dbPush";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
