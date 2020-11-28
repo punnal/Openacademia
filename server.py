@@ -2,6 +2,8 @@ import sqlite3
 from contextlib import closing
 from flask import Flask, render_template, jsonify, request
 import secrets
+import json
+
 
 app = Flask(__name__, static_folder="../static/dist",
             template_folder="../static")
@@ -30,15 +32,17 @@ def getTable(table):
 
 @app.route('/query', methods=['GET', 'POST'])
 def exec_query():
-    data = request.data.data
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
     print("data: ", data)
-    resp = CURSOR.execute(data.query).fetchall()
+    resp = CURSOR.execute(data["query"]).fetchall()
     print("response: ", resp)
     return jsonify(resp)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    data = request.data.data
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
     print("data: ", data)
    
     result = CURSOR.execute(f"SELECT {data.email} FROM User WHERE email={data.email}").fetchall()
@@ -59,7 +63,8 @@ def signup():
  
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
-    data = request.data.data
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
     print("data: ", data)
    
     result = CURSOR.execute(f"SELECT * FROM User WHERE email={data.email} AND password={data.password}").fetchall()
