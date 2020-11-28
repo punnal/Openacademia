@@ -32,26 +32,26 @@ def parse_request():
     print("response: ", resp)
     return jsonify(resp)
 
-@app.route('/signup', methods=['GET', 'POST'])
-def parse_request():
-    data = request.data
-    print("data: ", data)
+# @app.route('/signup', methods=['GET', 'POST'])
+# def parse_request():
+#     data = request.data
+#     print("data: ", data)
     
-    result = CURSOR.execute(f"
-        SELECT email
-                            "
-    )
+#     result = CURSOR.execute(f"
+#         SELECT email FROM 
+#                             "
+#     )
 
-    userID = getID()
+#     userID = getID()
 
-    resp = CURSOR.execute(f"
-        INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)]
-        VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});
-        ").fetchall()
+#     resp = CURSOR.execute(f"
+#         INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)]
+#         VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});
+#         ").fetchall()
 
-    resp = {"Success": True}
-    print("response: ", resp)
-    return jsonify(resp)
+#     resp = {"Success": True}
+#     print("response: ", resp)
+#     return jsonify(resp)
    
 
 if __name__ == "__main__":
