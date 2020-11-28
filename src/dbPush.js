@@ -1,12 +1,3 @@
-const dbPull = (url, callback) => {
-  fetch(url)
-    .then((response) => {
-      console.log(response);
-      return response.json();
-    })
-    .then((json) => callback(json, url))
-    .catch((e) => console.log(e));
-};
 const dbPush = (url, data, callback) => {
   let body = {
     data: data,
@@ -23,8 +14,8 @@ const dbPush = (url, data, callback) => {
       console.log(resp);
       return callback ? resp.json() : null;
     })
-    .then((json) => callback(json))
+    .then((json) => callback(json, url))
     .catch(() => console.log("caught"));
 };
 
-export default dbPull;
+export default dbPush;
