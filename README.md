@@ -18,8 +18,8 @@ Write reviews | :x:
 Response to a review | :x:
 Delete a review/response | :x:
 Edit a review/response | :x:
-Sort by date | :x:
-Filter by date | :x:
+Sort by date | :heavy_check_mark:
+Filter by date | :heavy_check_mark:
 Download paper | :x: 
 Change password | :x:
 Upload paper | :x:
