@@ -13,7 +13,7 @@ Search papers by title | :heavy_check_mark:
 Search papers by author name | :heavy_check_mark:
 Search papers by conference | :heavy_check_mark:
 Sign in | :x:
-Sign up | :x:
+Sign up | :heavy_check_mark:
 Write reviews | :x:
 Response to a review | :x:
 Delete a review/response | :x:
