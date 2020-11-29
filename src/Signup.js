@@ -1,11 +1,13 @@
-import React from 'react';
+import React from "react";
+import Button from "react-bootstrap/Button";
+import FormControl from "react-bootstrap/FormControl";
+import Form from "react-bootstrap/Form";
+import Modal from "react-bootstrap/Modal";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-import { useFormik } from 'formik';
-
-
+import { useFormik } from "formik";
 
 export default function Sign(props) {
-
   // Notice that we have to initialize ALL of fields with values. These
 
   // could come from props, but since we don't want to prefill this form,
@@ -15,105 +17,62 @@ export default function Sign(props) {
   // at you.
 
   const formik = useFormik({
-
     initialValues: {
-
-      firstName: '',
-
-      lastName: '',
-
-      email: '',
-
-      password:'',
-
+      name: "",
+      email: "",
+      password: "",
     },
 
-    onSubmit: values => {
-
-      alert(JSON.stringify(values, null, 2));
-
+    onSubmit: (values) => {
+      props.onSubmit(values);
     },
-
   });
-  const co={
+  const co = {
     borderRadius: "5px",
     backgroundColor: "#f2f2f2",
-    padding: "20px"
-  }
+    padding: "20px",
+  };
   return (
+    <Modal.Dialog variant="dark">
+      <Modal.Header>
+        <Modal.Title>Sign Up</Modal.Title>
+      </Modal.Header>
 
-    <div style={co}>
-            <form onSubmit={formik.handleSubmit}>
+      <Modal.Body></Modal.Body>
 
-            <label htmlFor="firstName">First Name</label>
+      <Form onSubmit={formik.handleSubmit}>
+        <FormControl
+          id="name"
+          name="name"
+          placeholder="Name"
+          type="text"
+          onChange={formik.handleChange}
+          value={formik.values.firstName}
+        />
+        <FormControl
+          id="email"
+          name="email"
+          placeholder="Email"
+          type="email"
+          onChange={formik.handleChange}
+          value={formik.values.email}
+        />
+        <FormControl
+          id="password"
+          name="password"
+          placeholder="Password"
+          type="password"
+          onChange={formik.handleChange}
+          value={formik.values.password}
+        />
+        <Modal.Footer>
+          <Button type="submit">Submit</Button>
+          <Button variant="secondary" onClick={() => props.setPressed(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal.Dialog>
+  );
+}
 
-            <input
-
-            id="firstName"
-
-            name="firstName"
-
-            type="text"
-
-            onChange={formik.handleChange}
-
-            value={formik.values.firstName}
-
-            />
-
-            <label htmlFor="lastName">Last Name</label>
-
-            <input
-
-            id="lastName"
-
-            name="lastName"
-
-            type="text"
-
-            onChange={formik.handleChange}
-
-            value={formik.values.lastName}
-
-            />
-
-            <label htmlFor="email">Email Address</label>
-
-            <input
-
-            id="email"
-
-            name="email"
-
-            type="email"
-
-            onChange={formik.handleChange}
-
-            value={formik.values.email}
-
-            />
-
-            <label htmlFor="password">Email Address</label>
-
-            <input
-
-            id="password"
-
-            name="password"
-
-            type="password"
-
-            onChange={formik.handleChange}
-
-            value={formik.values.password}
-
-            />
-
-            <button type="submit">Submit</button>
-
-            </form>
-    </div>
-
-            );
-
-};

@@ -8,6 +8,7 @@ import FormControl from "react-bootstrap/FormControl";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import Nav from "react-bootstrap/Nav";
+import Signup from "./Signup";
 import dbPush from "./dbPush";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -97,7 +98,15 @@ const NavBar = (props) => {
           {props.loggedIn ? (
             <Navbar.Text>Signed in as: {props.username}</Navbar.Text>
           ) : signUp ? (
-            <SignUp set={{ signUp: setSignUp }} />
+            <Signup
+              setPressed={setSignUp}
+              onSubmit={(values) =>
+                dbPush("/signup", values, (json) => {
+                  console.log(json);
+                  setSignUp(false);
+                })
+              }
+            />
           ) : signIn ? (
             <SignIn set={{ signIn: setSignIn }} />
           ) : (

@@ -53,17 +53,17 @@ def signup():
     print("data: ", data)
 
     result = CURSOR.execute(
-        f"SELECT {data.email} FROM User WHERE email={data.email}").fetchall()
+        f'SELECT * FROM User WHERE email="{data["email"]}"').fetchall()
 
     userID = getID()
 
     if(not result):
         resp = CURSOR.execute(
-            f"INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)] VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});").fetchall()
+            f'INSERT INTO User VALUES ("{userID}", "{data["email"]}", "{data["name"]}", "0", "{data["password"]}");').fetchall()
 
         sessionID = getSessionID()
         resp = CURSOR.execute(
-            f"INSERT INTO Sessions VALUES ({sessionID}, {userID});").fetchall()
+            f'INSERT INTO Sessions VALUES ("{sessionID}", "{userID}");').fetchall()
 
         resp = {"Success": True, "SessionID": sessionID, "UserID": userID}
         print("response: ", resp)
@@ -79,7 +79,7 @@ def signin():
     print("data: ", data)
 
     result = CURSOR.execute(
-        f"SELECT * FROM User WHERE email={data.email} AND password={data.password}").fetchall()
+        f'SELECT * FROM User WHERE email="{data.email}" AND password="{data.password}"').fetchall()
 
     if(result):
         resp = result
