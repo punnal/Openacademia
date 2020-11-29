@@ -33,7 +33,7 @@ export default function Sign(props) {
     padding: "20px",
   };
   return (
-    <Modal.Dialog variant="dark">
+    <Modal.Dialog>
       <Modal.Header>
         <Modal.Title>Sign Up</Modal.Title>
       </Modal.Header>

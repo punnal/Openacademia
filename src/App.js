@@ -1,4 +1,6 @@
 import logo from "./logo.svg";
+import Modal from "react-bootstrap/Modal";
+import { useFormik } from "formik";
 import Table from "./Table";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
@@ -59,15 +61,49 @@ const SignUp = (props) => {
   );
 };
 const SignIn = (props) => {
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+
+    onSubmit: (values) => {
+      props.set.onSignIn(values);
+    },
+  });
   return (
-    <Form inline>
-      <FormControl type="text" placeholder="Email" className="mr-sm-2" />
-      <FormControl type="password" placeholder="Password" className="mr-sm-2" />
-      <Button variant="outline-info">Sign Up</Button>
-      <Button onClick={() => props.set.signIn(false)} variant="dark">
-        Back
-      </Button>
-    </Form>
+    <Modal.Dialog>
+      <Modal.Header>
+        <Modal.Title>Sign In</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body></Modal.Body>
+
+      <Form onSubmit={formik.handleSubmit}>
+        <FormControl
+          id="email"
+          name="email"
+          placeholder="Email"
+          type="email"
+          onChange={formik.handleChange}
+          value={formik.values.email}
+        />
+        <FormControl
+          id="password"
+          name="password"
+          placeholder="Password"
+          type="password"
+          onChange={formik.handleChange}
+          value={formik.values.password}
+        />
+        <Modal.Footer>
+          <Button type="submit">Submit</Button>
+          <Button variant="secondary" onClick={() => props.set.signIn(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Form>
+    </Modal.Dialog>
   );
 };
 const SignInSignUp = (props) => {
@@ -104,11 +140,27 @@ const NavBar = (props) => {
                 dbPush("/signup", values, (json) => {
                   console.log(json);
                   setSignUp(false);
+                  props.setLogin(true);
+                  props.setUsername(json.name);
                 })
               }
             />
           ) : signIn ? (
-            <SignIn set={{ signIn: setSignIn }} />
+            <SignIn
+              set={{
+                signIn: setSignIn,
+                onSignIn: (values) => {
+                  dbPush("/signin", values, (json) => {
+                    if (json.Success) {
+                      setSignIn(false);
+                      props.setLogin(true);
+                      props.setUsername(json.name);
+                    } else {
+                    }
+                  });
+                },
+              }}
+            />
           ) : (
             <SignInSignUp set={{ signUp: setSignUp, signIn: setSignIn }} />
           )}
@@ -160,8 +212,10 @@ const App = () => {
   const [success, setSuccess] = useState(false);
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState([]);
-  const attrs = "Title, Name, Category, Conference";
-  const table = "(Paper LEFT JOIN User) LEFT JOIN Publishes";
+  const [loggedIn, setLogin] = useState(false);
+  const [username, setUsername] = useState("");
+  const attrs = "*";
+  const table = "FullPaper";
 
   useEffect(() => {
     executeQuery(`SELECT ${attrs} FROM ${table}`, (json) => {
@@ -179,7 +233,12 @@ const App = () => {
         <Heading />
       </header>
       <Router>
-        <NavBar />
+        <NavBar
+          loggedIn={loggedIn}
+          setLogin={setLogin}
+          username={username}
+          setUsername={setUsername}
+        />
         <SearchBar
           onSearch={(title, text) =>
             executeQuery(

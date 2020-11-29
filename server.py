@@ -65,7 +65,8 @@ def signup():
         resp = CURSOR.execute(
             f'INSERT INTO Sessions VALUES ("{sessionID}", "{userID}");').fetchall()
 
-        resp = {"Success": True, "SessionID": sessionID, "UserID": userID}
+        resp = {"Success": True, "SessionID": sessionID,
+                "UserID": userID, "name": data["name"]}
         print("response: ", resp)
         return jsonify(resp)
     resp = {"Success": False, "Msg": "User already exists"}
@@ -79,7 +80,7 @@ def signin():
     print("data: ", data)
 
     result = CURSOR.execute(
-        f'SELECT * FROM User WHERE email="{data.email}" AND password="{data.password}"').fetchall()
+        f'SELECT * FROM User WHERE email="{data["email"]}" AND password="{data["password"]}"').fetchall()
 
     if(result):
         resp = result
