@@ -11,11 +11,14 @@ app = Flask(__name__, static_folder="../static/dist",
 DB = sqlite3.connect("openacademia.db")
 CURSOR = DB.cursor()
 
+
 def getID():
     return 1
 
+
 def getSessionID():
     return secrets.token_urlsafe(64)
+
 
 @app.route("/")
 def index():
@@ -38,48 +41,55 @@ def exec_query():
     cursor = CURSOR.execute(data["query"])
     names = list(map(lambda x: x[0], cursor.description))
     rows = cursor.fetchall()
-    resp = {"colums": names, "Rows": rows}
+    resp = {"columns": names, "rows": rows}
     print("response: ", resp)
     return jsonify(resp)
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     data = request.data.decode('utf-8')
     data = (json.loads(data))["data"]
     print("data: ", data)
-   
-    result = CURSOR.execute(f"SELECT {data.email} FROM User WHERE email={data.email}").fetchall()
+
+    result = CURSOR.execute(
+        f"SELECT {data.email} FROM User WHERE email={data.email}").fetchall()
 
     userID = getID()
 
     if(not result):
-        resp = CURSOR.execute(f"INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)] VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});").fetchall()
+        resp = CURSOR.execute(
+            f"INSERT INTO User [(UserID, Email, Name, IsAuthor, Password)] VALUES ({userID}, {data.email}, {data.name}, 0, {data.password});").fetchall()
 
         sessionID = getSessionID()
-        resp = CURSOR.execute(f"INSERT INTO Sessions VALUES ({sessionID}, {userID});").fetchall()
+        resp = CURSOR.execute(
+            f"INSERT INTO Sessions VALUES ({sessionID}, {userID});").fetchall()
 
         resp = {"Success": True, "SessionID": sessionID, "UserID": userID}
         print("response: ", resp)
         return jsonify(resp)
     resp = {"Success": False, "Msg": "User already exists"}
     return jsonify(resp)
- 
+
+
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
     data = request.data.decode('utf-8')
     data = (json.loads(data))["data"]
     print("data: ", data)
-   
-    result = CURSOR.execute(f"SELECT * FROM User WHERE email={data.email} AND password={data.password}").fetchall()
+
+    result = CURSOR.execute(
+        f"SELECT * FROM User WHERE email={data.email} AND password={data.password}").fetchall()
 
     if(result):
         resp = result
         print("response: ", resp)
         return jsonify(resp)
     else:
-        resp = {"Success": False, "Msg": "Wrong password or account does not exists"}
+        resp = {"Success": False,
+                "Msg": "Wrong password or account does not exists"}
         return jsonify(resp)
-  
+
 
 if __name__ == "__main__":
     app.run(threaded=False)
