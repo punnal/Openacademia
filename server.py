@@ -13,7 +13,7 @@ CURSOR = DB.cursor()
 
 
 def getID():
-    return 1
+    return secrets.token_urlsafe(10)
 
 
 def getSessionID():
