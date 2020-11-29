@@ -9,14 +9,14 @@ Use Case | Status
 ------------ | :------------:
 View about us page | :heavy_check_mark:
 Filter papers by category | :heavy_check_mark:
+Search papers by title | :heavy_check_mark:
+Search papers by author name | :x:
 Sign in | :x:
 Sign up | :x:
 Write reviews | :x:
 Response to a review | :x:
 Delete a review/response | :x:
 Edit a review/response | :x:
-Search papers by author name | :x:
-Search papers by title | :x:
 Search papers by conference | :x:
 Sort by date | :x:
 Filter by date | :x:
