@@ -203,6 +203,54 @@ const SearchBar = (props) => {
   );
 };
 
+const DateBar = (props) => {
+  const [order, setOrder] = useState("Order");
+  const [start, setStart] = useState("0000-01-01");
+  const [end, setEnd] = useState("9999-12-31");
+  return (
+    <Nav className="p-2 d-flex justify-content-center">
+      <Form inline>
+        <FormControl
+          type="text"
+          placeholder="Start Date"
+          onChange={(e) => setStart(e.target.value)}
+          className="mr-sm-2"
+          value={start}
+        />
+        <FormControl
+          type="text"
+          placeholder="End Date"
+          onChange={(e) => setEnd(e.target.value)}
+          className="mr-sm-2"
+          value={end}
+        />
+        <DropdownButton
+          className="p-2"
+          onSelect={(_, e) => setOrder(e.target.innerText)}
+          title={order}
+        >
+          <Dropdown.Item>Assending</Dropdown.Item>
+          <Dropdown.Item>Decending</Dropdown.Item>
+        </DropdownButton>
+        <Button
+          variant="outline-info"
+          onClick={() => {
+            if(start === ""){
+              setStart('0000-01-01')
+            }
+            if(end === ""){
+              setEnd('9999-12-31')
+            }
+            props.onFilter(start, end, order)
+          }}
+        >
+          Filter
+        </Button>
+      </Form>
+    </Nav>
+  );
+};
+
 const onRowClick = (row) => {};
 
 const executeQuery = (query, callback) => {
@@ -246,6 +294,30 @@ const App = () => {
               (json) => setRows(json.rows)
             )
           }
+        />
+        <DateBar
+          onFilter={(start, end, order) =>{
+            if(order==="Order"){
+              executeQuery(
+                  `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}"`,
+                  (json) => setRows(json.rows)
+              )
+            }
+            else{
+              if(order === "Assending"){
+                executeQuery(
+                    `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}" ORDER BY date ASC`,
+                    (json) => setRows(json.rows)
+                )
+              }
+              else if(order === "Decending"){
+                executeQuery(
+                    `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}" ORDER BY date DESC`,
+                    (json) => setRows(json.rows)
+                )
+              }
+            }
+          }}
         />
         <Switch>
           <Route exact path="/">
