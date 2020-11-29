@@ -14,8 +14,8 @@ const dbPush = (url, data, callback) => {
       console.log(resp);
       return callback ? resp.json() : null;
     })
-    .then((json) => callback(json, url))
-    .catch(() => console.log("caught"));
+    .then((json) => callback(json))
+    .catch((e) => console.log("error:", e));
 };
 
 export default dbPush;

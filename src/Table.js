@@ -18,12 +18,15 @@ const Row = (props) => {
 const Table = (props) => {
   return (
     <BTable striped bordered hover variant="dark">
+      <thead>
+        {props.cols.map((col, id) => (
+          <th key={id}> {col}</th>
+        ))}
+      </thead>
       <tbody>
-        {props.rows.map((row, id) =>
-          row.includes(props.filter) || props.filter === "All" ? (
-            <Row key={id} row={row} />
-          ) : null
-        )}
+        {props.rows.map((row, id) => (
+          <Row key={id} row={row} />
+        ))}
       </tbody>
     </BTable>
   );

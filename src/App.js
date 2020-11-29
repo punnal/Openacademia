@@ -5,6 +5,8 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Navbar from "react-bootstrap/Navbar";
 import Form from "react-bootstrap/Form";
 import FormControl from "react-bootstrap/FormControl";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import Dropdown from "react-bootstrap/Dropdown";
 import Nav from "react-bootstrap/Nav";
 import dbPush from "./dbPush";
 import "./App.css";
@@ -22,7 +24,7 @@ const Heading = () => {
 
 const FilterBar = (props) => {
   return (
-    <ButtonGroup onClick={(e) => props.setFilter(e.target.innerText)}>
+    <ButtonGroup onClick={(e) => props.onClick(e.target.innerText)}>
       {categories.map((cat) => (
         <Button variant="secondary">{cat}</Button>
       ))}
@@ -107,26 +109,55 @@ const NavBar = (props) => {
   );
 };
 
-const SearchBar = () => {
+const SearchBar = (props) => {
+  const [title, setTitle] = useState("Filter");
+  const [text, setText] = useState("");
   return (
     <Nav className="p-2 d-flex justify-content-center">
       <Form inline>
-        <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-        <Button variant="outline-info">Search</Button>
+        <FormControl
+          type="text"
+          placeholder="Search"
+          onChange={(e) => setText(e.target.value)}
+          className="mr-sm-2"
+          value={text}
+        />
+        <DropdownButton
+          className="p-2"
+          onSelect={(_, e) => setTitle(e.target.innerText)}
+          title={title}
+        >
+          <Dropdown.Item>Author</Dropdown.Item>
+          <Dropdown.Item>Title</Dropdown.Item>
+          <Dropdown.Item>Conference</Dropdown.Item>
+        </DropdownButton>
+        <Button
+          variant="outline-info"
+          onClick={() => props.onSearch(title, text)}
+        >
+          Search
+        </Button>
       </Form>
     </Nav>
   );
 };
+
+const onRowClick = (row) => {};
+
+const executeQuery = (query, callback) => {
+  dbPush("/query", { query: query }, (json) => callback(json));
+};
 const App = () => {
   const [success, setSuccess] = useState(false);
   const [rows, setRows] = useState([]);
-  const [filter, setFilter] = useState("All");
+  const [cols, setCols] = useState([]);
 
   useEffect(() => {
-    dbPush("/query", { query: "select * from Paper" }, (json, _) => {
-      setRows(json);
+    executeQuery(`SELECT * FROM Paper`, (json) => {
+      setRows(json.rows);
+      setCols(json.columns);
       setSuccess(true);
-      console.log(json);
+      console.log(json.columns);
     });
   }, []);
 
@@ -138,12 +169,33 @@ const App = () => {
       </header>
       <Router>
         <NavBar />
-        <SearchBar />
+        <SearchBar
+          onSearch={(title, text) =>
+            executeQuery(
+              `SELECT * FROM Paper WHERE UPPER(${title})=UPPER("${text}")`,
+              (json) => setRows(json.rows)
+            )
+          }
+        />
         <Switch>
           <Route exact path="/">
-            <FilterBar setFilter={setFilter} />
+            <FilterBar
+              onClick={(filter) =>
+                executeQuery(
+                  `SELECT * FROM Paper ${
+                    filter !== "All" ? `WHERE Category = "${filter}"` : ``
+                  }`,
+                  (json) => setRows(json.rows)
+                )
+              }
+            />
             {success && (
-              <Table className="App-header" rows={rows} filter={filter} />
+              <Table
+                className="App-header"
+                cols={cols}
+                rows={rows}
+                onRowClick={(row) => onRowClick(row)}
+              />
             )}
           </Route>
           <Route path="/aboutus">
