@@ -12,7 +12,7 @@ Filter papers by category | :heavy_check_mark:
 Search papers by title | :heavy_check_mark:
 Search papers by author name | :heavy_check_mark:
 Search papers by conference | :heavy_check_mark:
-Sign in | :x:
+Sign in | :heavy_check_mark:
 Sign up | :heavy_check_mark:
 Write reviews | :x:
 Response to a review | :x:
