@@ -151,9 +151,11 @@ const App = () => {
   const [success, setSuccess] = useState(false);
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState([]);
+  const attrs = "Title, Name, Category, Conference";
+  const table = "(Paper LEFT JOIN User) LEFT JOIN Publishes";
 
   useEffect(() => {
-    executeQuery(`SELECT * FROM Paper`, (json) => {
+    executeQuery(`SELECT ${attrs} FROM ${table}`, (json) => {
       setRows(json.rows);
       setCols(json.columns);
       setSuccess(true);
@@ -172,7 +174,7 @@ const App = () => {
         <SearchBar
           onSearch={(title, text) =>
             executeQuery(
-              `SELECT * FROM Paper WHERE UPPER(${title})=UPPER("${text}")`,
+              `SELECT ${attrs} FROM ${table} WHERE UPPER(${title})=UPPER("${text}")`,
               (json) => setRows(json.rows)
             )
           }
@@ -182,7 +184,7 @@ const App = () => {
             <FilterBar
               onClick={(filter) =>
                 executeQuery(
-                  `SELECT * FROM Paper ${
+                  `SELECT ${attrs} FROM ${table} ${
                     filter !== "All" ? `WHERE Category = "${filter}"` : ``
                   }`,
                   (json) => setRows(json.rows)

@@ -2,7 +2,7 @@ import "./App.css";
 import BTable from "react-bootstrap/Table";
 import "bootstrap/dist/css/bootstrap.min.css";
 const RowCell = (props) => {
-  return <td>{props.attr.toString()}</td>;
+  return <td>{props.attr ? props.attr.toString() : null}</td>;
 };
 const Row = (props) => {
   console.log(props.row);
