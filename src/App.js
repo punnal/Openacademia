@@ -28,8 +28,10 @@ const Heading = () => {
 const FilterBar = (props) => {
   return (
     <ButtonGroup onClick={(e) => props.onClick(e.target.innerText)}>
-      {categories.map((cat) => (
-        <Button variant="secondary">{cat}</Button>
+      {categories.map((cat, id) => (
+        <Button key={id} variant="secondary">
+          {cat}
+        </Button>
       ))}
     </ButtonGroup>
   );
@@ -46,20 +48,6 @@ const categories = [
   "Other",
 ];
 
-const SignUp = (props) => {
-  return (
-    <Form inline>
-      <FormControl type="text" placeholder="Email" className="mr-sm-2" />
-      <FormControl type="password" placeholder="Password" className="mr-sm-2" />
-      <Button variant="outline-info" onClick={() => dbPush("/signup")}>
-        Sign Up
-      </Button>
-      <Button onClick={() => props.set.signUp(false)} variant="dark">
-        Back
-      </Button>
-    </Form>
-  );
-};
 const SignIn = (props) => {
   const formik = useFormik({
     initialValues: {
@@ -151,11 +139,13 @@ const NavBar = (props) => {
                 signIn: setSignIn,
                 onSignIn: (values) => {
                   dbPush("/signin", values, (json) => {
-                    if (json.Success) {
+                    if (json.success) {
                       setSignIn(false);
-                      props.setLogin(true);
                       props.setUsername(json.name);
+                      props.setEmail(json.email);
+                      props.setLogin(true);
                     } else {
+                      console.error("sign in failed");
                     }
                   });
                 },
@@ -235,13 +225,13 @@ const DateBar = (props) => {
         <Button
           variant="outline-info"
           onClick={() => {
-            if(start === ""){
-              setStart('0000-01-01')
+            if (start === "") {
+              setStart("0000-01-01");
             }
-            if(end === ""){
-              setEnd('9999-12-31')
+            if (end === "") {
+              setEnd("9999-12-31");
             }
-            props.onFilter(start, end, order)
+            props.onFilter(start, end, order);
           }}
         >
           Filter
@@ -252,27 +242,102 @@ const DateBar = (props) => {
 };
 
 const onRowClick = (row) => {};
-
-const executeQuery = (query, callback) => {
-  dbPush("/query", { query: query }, (json) => callback(json));
+const HomePage = () => {
+  const [rows, setRows] = useState([]);
+  const attrs = "*";
+  const table = "FullPaper";
+  return (
+    <>
+      <SearchBar
+        onSearch={(title, text) =>
+          executeQuery(
+            `SELECT ${attrs} FROM ${table} WHERE UPPER(${title})=UPPER("${text}")`,
+            (json) => setRows(json.rows)
+          )
+        }
+      />
+      <DateBar
+        onFilter={(start, end, order) => {
+          if (order === "Order") {
+            executeQuery(
+              `SELECT ${attrs} FROM ${table} WHERE date BETWEEN "${start}" AND "${end}"`,
+              (json) => setRows(json.rows)
+            );
+          } else {
+            if (order === "Assending") {
+              executeQuery(
+                `SELECT ${attrs} FROM ${table} WHERE date BETWEEN "${start}" AND "${end}" ORDER BY date ASC`,
+                (json) => setRows(json.rows)
+              );
+            } else if (order === "Decending") {
+              executeQuery(
+                `SELECT ${attrs} FROM ${table} WHERE date BETWEEN "${start}" AND "${end}" ORDER BY date DESC`,
+                (json) => setRows(json.rows)
+              );
+            }
+          }
+        }}
+      />
+      <FilterBar
+        onClick={(filter) =>
+          executeQuery(
+            `SELECT ${attrs} FROM ${table} ${
+              filter !== "All" ? `WHERE Category = "${filter}"` : ``
+            }`,
+            (json) => setRows(json.rows)
+          )
+        }
+      />
+      <TableQuery query={`SELECT ${attrs} FROM ${table}`} />
+    </>
+  );
 };
-const App = () => {
+
+const TableQuery = (props) => {
+  const query = props.query;
   const [success, setSuccess] = useState(false);
   const [rows, setRows] = useState([]);
   const [cols, setCols] = useState([]);
-  const [loggedIn, setLogin] = useState(false);
-  const [username, setUsername] = useState("");
-  const attrs = "*";
-  const table = "FullPaper";
-
   useEffect(() => {
-    executeQuery(`SELECT ${attrs} FROM ${table}`, (json) => {
+    executeQuery(query, (json) => {
       setRows(json.rows);
       setCols(json.columns);
       setSuccess(true);
       console.log(json.columns);
     });
   }, []);
+  return (
+    <>
+      {success && (
+        <Table
+          className="App-header"
+          cols={cols}
+          rows={rows}
+          onRowClick={(row) => onRowClick(row)}
+        />
+      )}
+    </>
+  );
+};
+
+const ProfilePage = (props) => {
+  console.log("Email: ", props.email);
+  return (
+    <>
+      <h1 className="text-muted"> {props.name}'s Papers </h1>
+      <TableQuery
+        query={`SELECT * FROM Paper WHERE UserID = (SELECT UserID FROM User WHERE Email = '${props.email}')`}
+      />
+    </>
+  );
+};
+const executeQuery = (query, callback) => {
+  dbPush("/query", { query: query }, (json) => callback(json));
+};
+const App = () => {
+  const [loggedIn, setLogin] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
 
   return (
     <div className="App">
@@ -286,58 +351,14 @@ const App = () => {
           setLogin={setLogin}
           username={username}
           setUsername={setUsername}
-        />
-        <SearchBar
-          onSearch={(title, text) =>
-            executeQuery(
-              `SELECT ${attrs} FROM ${table} WHERE UPPER(${title})=UPPER("${text}")`,
-              (json) => setRows(json.rows)
-            )
-          }
-        />
-        <DateBar
-          onFilter={(start, end, order) =>{
-            if(order==="Order"){
-              executeQuery(
-                  `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}"`,
-                  (json) => setRows(json.rows)
-              )
-            }
-            else{
-              if(order === "Assending"){
-                executeQuery(
-                    `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}" ORDER BY date ASC`,
-                    (json) => setRows(json.rows)
-                )
-              }
-              else if(order === "Decending"){
-                executeQuery(
-                    `SELECT ${attrs} FROM ${table} WHERE date bETWEEN "${start}" AND "${end}" ORDER BY date DESC`,
-                    (json) => setRows(json.rows)
-                )
-              }
-            }
-          }}
+          setEmail={setEmail}
         />
         <Switch>
           <Route exact path="/">
-            <FilterBar
-              onClick={(filter) =>
-                executeQuery(
-                  `SELECT ${attrs} FROM ${table} ${
-                    filter !== "All" ? `WHERE Category = "${filter}"` : ``
-                  }`,
-                  (json) => setRows(json.rows)
-                )
-              }
-            />
-            {success && (
-              <Table
-                className="App-header"
-                cols={cols}
-                rows={rows}
-                onRowClick={(row) => onRowClick(row)}
-              />
+            {loggedIn ? (
+              <ProfilePage name={username} email={email} />
+            ) : (
+              <HomePage />
             )}
           </Route>
           <Route path="/aboutus">
