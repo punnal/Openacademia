@@ -359,11 +359,14 @@ const executeQuery = (query, callback) => {
   dbPush("/query", { query: query }, (json) => callback(json));
 };
 const Reply = (props) => {
-  return <></>;
+  return <div>
+    <p className="text-muted">{props.reply[5]}:{props.reply[2]} --> {props.reply[1]}</p>
+    </div>;
 };
 const ReplyThread = (props) => {
   return (
     <>
+      <h2 className="text-muted">Replies</h2>
       {props.replies.map((reply, id) => (
         <Reply key={id} reply={reply} />
       ))}
