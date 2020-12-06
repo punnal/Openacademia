@@ -67,7 +67,7 @@ def deleteReply():
     print("data: ", data)
 
     CURSOR.execute(
-        f'DELETE FROM User WHERE ReplyID="{data["replyID"]}";').fetchall()
+        f'DELETE FROM Reply WHERE ReplyID="{data["replyID"]}";').fetchall()
 
 @app.route('/updatereply', methods=['GET', 'POST'])
 def updateReply():
@@ -76,7 +76,7 @@ def updateReply():
     print("data: ", data)
 
     CURSOR.execute(
-        f'UPDATE User SET Reply={data["Reply"]}WHERE ReplyID="{data["replyID"]}";').fetchall()
+        f'UPDATE Reply SET Reply={data["Reply"]} WHERE ReplyID="{data["replyID"]}";').fetchall()
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -126,6 +126,48 @@ def signin():
                 "msg": "Wrong password or account does not exists"}
         return jsonify(resp)
 
+@app.route('/updatepassword', methods=['GET', 'POST'])
+def updatePassword():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+
+    result = CURSOR.execute(
+        f'SELECT sessionID FROM Sessions WHERE userID="{data["userID"]}"').fetchall()
+    print(result)
+
+    if(result and result == data["sessionID"]):
+        result = CURSOR.execute(
+            f'SELECT password FROM User WHERE userID="{data["userID"]}"').fetchall()
+        print(result)
+        if(result and result == data["password"]):
+            CURSOR.execute(
+                f'UPDATE User SET password={data["newPassword"]} WHERE userID="{data["userID"]}";').fetchall()
+
+            resp = {"success": True,
+                    "msg": "Sucess"}
+            return jsonify(resp)
+
+    resp = {"success": False,
+            "msg": "Some error occured"}
+    return jsonify(resp)
+
+
+
+    if(not result):
+        resp = CURSOR.execute(
+            f'INSERT INTO User VALUES ("{userID}", "{data["email"]}", "{data["name"]}", "0", "{data["password"]}");').fetchall()
+
+        sessionID = getSessionID()
+        resp = CURSOR.execute(
+            f'INSERT INTO Sessions VALUES ("{sessionID}", "{userID}");').fetchall()
+
+        resp = {"success": True, "sessionID": sessionID,
+                "userID": userID, "name": data["name"]}
+        print("response: ", resp)
+        return jsonify(resp)
+    resp = {"success": False, "msg": "User already exists"}
+    return jsonify(resp)
 
 if __name__ == "__main__":
     app.run(threaded=False)
