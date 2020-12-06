@@ -20,7 +20,6 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useLocation,
   Redirect,
 } from "react-router-dom";
 
@@ -364,12 +363,24 @@ const executeQuery = (query, callback) => {
   dbPush("/query", { query: query }, (json) => callback(json));
 };
 
+const deleteReply = (id) => {
+  dbPush("/deletereply", { replyID: id }, (json) =>
+    console.log("reply deleted", json)
+  );
+};
 const Reply = (props) => {
+  const replyid = props.reply[0];
+  const userid = props.reply[2];
+  const parentid = props.reply[4];
+  const thisuser = Cookie.get("userid");
   return (
     <div>
       <p className="text-muted">
-        {props.reply[5]}:{props.reply[2]} --> {props.reply[1]}
+        {replyid} | ^{parentid} | {userid} --> {props.reply[1]}
       </p>
+      {thisuser === userid ? (
+        <ReplyButton text="Delete" onClick={() => deleteReply(replyid)} />
+      ) : null}
     </div>
   );
 };
@@ -390,7 +401,7 @@ const CommentBox = (props) => {
           value={reply}
         />
         <ReplyButton
-          parent={props.parent}
+          text="Reply"
           onClick={() => sendReply(parentid, reply, userid, paperid)}
         />
       </Form>
@@ -408,7 +419,7 @@ const ReplyButton = (props) => {
   return (
     <>
       <Button variant="outline-info" onClick={() => props.onClick()}>
-        {props.parent}
+        {props.text}
       </Button>
     </>
   );
@@ -474,7 +485,7 @@ const App = () => {
   const [loggedIn, setLogin] = useState(Cookie.get("userid") ? true : false);
   const [username, setUsername] = useState(Cookie.get("name"));
   const [email, setEmail] = useState(Cookie.get("email"));
-  const [rowClicked, onRowClick] = useState();
+  const [rowClicked, onRowClick] = useState(Cookie.get("row"));
 
   useEffect(() => {
     console.log("ROW CLICKED ", rowClicked);
@@ -498,14 +509,22 @@ const App = () => {
           <Route exact path="/">
             {loggedIn ? (
               <ProfilePage
-                onRowClick={onRowClick}
+                onRowClick={(row) => {
+                  onRowClick(row);
+                  Cookie.set("row", row);
+                }}
                 name={username}
                 email={email}
               />
             ) : rowClicked ? (
               <Redirect to={`/paper/${rowClicked}`} />
             ) : (
-              <HomePage onRowClick={onRowClick} />
+              <HomePage
+                onRowClick={(row) => {
+                  onRowClick(row);
+                  Cookie.set("row", row);
+                }}
+              />
             )}
           </Route>
           <Route path="/aboutus">
@@ -522,8 +541,7 @@ const App = () => {
             </div>
           </Route>
           <Route path="/paper">
-            {console.log("rowclicked ", rowClicked)}
-            <PaperPage id={rowClicked} signedIn={loggedIn} />
+            <PaperPage id={Cookie.get("row")} signedIn={loggedIn} />
           </Route>
         </Switch>
       </Router>
