@@ -15,6 +15,7 @@ import dbPush from "./dbPush";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
+import Cookie from "js-cookie";
 import {
   BrowserRouter as Router,
   Switch,
@@ -22,7 +23,6 @@ import {
   useLocation,
   Redirect,
 } from "react-router-dom";
-
 
 const Logo = () => {
   return <img src={logo} className="App-logo" alt="logo" />;
@@ -148,6 +148,9 @@ const NavBar = (props) => {
                   dbPush("/signin", values, (json) => {
                     if (json.success) {
                       setSignIn(false);
+                      Cookie.set("userid", json.userid);
+                      Cookie.set("name", json.name);
+                      Cookie.set("email", json.name);
                       props.setUsername(json.name);
                       props.setEmail(json.email);
                       props.setLogin(true);
@@ -360,14 +363,18 @@ const executeQuery = (query, callback) => {
   dbPush("/query", { query: query }, (json) => callback(json));
 };
 
-
 const Reply = (props) => {
-  return <div>
-    <p className="text-muted">{props.reply[5]}:{props.reply[2]} --> {props.reply[1]}</p>
-    </div>;
+  return (
+    <div>
+      <p className="text-muted">
+        {props.reply[5]}:{props.reply[2]} --> {props.reply[1]}
+      </p>
+    </div>
+  );
 };
 const ReplyThread = (props) => {
   const [reply, setReply] = useState("");
+  console.log("Signed in as ", Cookie.get("user"));
   return (
     <>
       <h2 className="text-muted">Replies</h2>
@@ -382,16 +389,11 @@ const ReplyThread = (props) => {
           className="mr-sm-2"
           value={reply}
         />
-        <Button
-          variant="outline-info"
-          onClick={() => props.onReply(reply)}
-        >
+        <Button variant="outline-info" onClick={() => props.onReply(reply)}>
           Search
         </Button>
-
       </Form>
     </>
-
   );
 };
 const PaperPage = (props) => {
@@ -416,19 +418,22 @@ const PaperPage = (props) => {
   return (
     <>
       <h1 className="text-muted"> {props.id} </h1>
-      <ReplyThread replies={replies} onReply={(comment) =>
+      <ReplyThread
+        replies={replies}
+        onReply={(comment) =>
           executeQuery(
             `SELECT ${comment} FROM ${comment} WHERE UPPER(${comment})=UPPER("${comment}")`,
             (json) => setRow(json.rows)
           )
-        }/>
+        }
+      />
     </>
   );
 };
 const App = () => {
-  const [loggedIn, setLogin] = useState(false);
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
+  const [loggedIn, setLogin] = useState(Cookie.get("userid") ? true : false);
+  const [username, setUsername] = useState(Cookie.get("name"));
+  const [email, setEmail] = useState(Cookie.get("email"));
   const [rowClicked, onRowClick] = useState();
 
   useEffect(() => {

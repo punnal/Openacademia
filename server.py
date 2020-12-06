@@ -56,10 +56,9 @@ def reply():
     replyID = getID()
     today = date.today()
     d1 = today.strftime("%Y-%m-%d")
-    
-    CURSOR.execute(
-            f'INSERT INTO User VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
 
+    CURSOR.execute(
+        f'INSERT INTO User VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -100,7 +99,8 @@ def signin():
 
     print("result", result)
     if(result):
-        resp = {"success": True, "name": result[2], "email": result[1]}
+        resp = {"success": True,
+                "name": result[2], "email": result[1], "userid": result[0]}
         print("response: ", resp)
         return jsonify(resp)
     else:
