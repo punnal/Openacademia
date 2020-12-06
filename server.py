@@ -58,7 +58,7 @@ def reply():
     d1 = today.strftime("%Y-%m-%d")
 
     CURSOR.execute(
-        f'INSERT INTO User VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
+        f'INSERT INTO Reply VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
 
 @app.route('/deletereply', methods=['GET', 'POST'])
 def deleteReply():
