@@ -391,7 +391,7 @@ const CommentBox = (props) => {
         />
         <ReplyButton
           parent={props.parent}
-          onClick={() => sendReply(parentid, reply, userid, parentid)}
+          onClick={() => sendReply(parentid, reply, userid, paperid)}
         />
       </Form>
     </>
@@ -522,6 +522,7 @@ const App = () => {
             </div>
           </Route>
           <Route path="/paper">
+            {console.log("rowclicked ", rowClicked)}
             <PaperPage id={rowClicked} signedIn={loggedIn} />
           </Route>
         </Switch>
