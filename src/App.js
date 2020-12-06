@@ -23,6 +23,7 @@ import {
   Redirect,
 } from "react-router-dom";
 
+
 const Logo = () => {
   return <img src={logo} className="App-logo" alt="logo" />;
 };
@@ -358,19 +359,39 @@ const ProfilePage = (props) => {
 const executeQuery = (query, callback) => {
   dbPush("/query", { query: query }, (json) => callback(json));
 };
+
+
 const Reply = (props) => {
   return <div>
     <p className="text-muted">{props.reply[5]}:{props.reply[2]} --> {props.reply[1]}</p>
     </div>;
 };
 const ReplyThread = (props) => {
+  const [reply, setReply] = useState("");
   return (
     <>
       <h2 className="text-muted">Replies</h2>
       {props.replies.map((reply, id) => (
         <Reply key={id} reply={reply} />
       ))}
+      <Form inline>
+        <FormControl
+          type="text"
+          placeholder="Comment"
+          onChange={(e) => setReply(e.target.value)}
+          className="mr-sm-2"
+          value={reply}
+        />
+        <Button
+          variant="outline-info"
+          onClick={() => props.onReply(reply)}
+        >
+          Search
+        </Button>
+
+      </Form>
     </>
+
   );
 };
 const PaperPage = (props) => {
@@ -395,7 +416,12 @@ const PaperPage = (props) => {
   return (
     <>
       <h1 className="text-muted"> {props.id} </h1>
-      <ReplyThread replies={replies} />
+      <ReplyThread replies={replies} onReply={(comment) =>
+          executeQuery(
+            `SELECT ${comment} FROM ${comment} WHERE UPPER(${comment})=UPPER("${comment}")`,
+            (json) => setRow(json.rows)
+          )
+        }/>
     </>
   );
 };

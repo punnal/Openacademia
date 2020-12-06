@@ -3,6 +3,7 @@ from contextlib import closing
 from flask import Flask, render_template, jsonify, request
 import secrets
 import json
+from datetime import date
 
 
 app = Flask(__name__, static_folder="../static/dist",
@@ -44,6 +45,21 @@ def exec_query():
     resp = {"columns": names, "rows": rows}
     print("response: ", resp)
     return jsonify(resp)
+
+
+@app.route('/reply', methods=['GET', 'POST'])
+def reply():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+
+    replyID = getID()
+    today = date.today()
+    d1 = today.strftime("%Y-%m-%d")
+    
+    CURSOR.execute(
+            f'INSERT INTO User VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
+
 
 
 @app.route('/signup', methods=['GET', 'POST'])
