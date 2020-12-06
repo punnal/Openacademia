@@ -59,6 +59,8 @@ def reply():
 
     CURSOR.execute(
         f'INSERT INTO Reply VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
+    resp = {"success": True}
+    return jsonify(resp)
 
 @app.route('/deletereply', methods=['GET', 'POST'])
 def deleteReply():
@@ -68,6 +70,8 @@ def deleteReply():
 
     CURSOR.execute(
         f'DELETE FROM Reply WHERE ReplyID="{data["replyID"]}";').fetchall()
+    resp = {"success": True}
+    return jsonify(resp)
 
 @app.route('/updatereply', methods=['GET', 'POST'])
 def updateReply():
@@ -77,6 +81,8 @@ def updateReply():
 
     CURSOR.execute(
         f'UPDATE Reply SET Reply={data["Reply"]} WHERE ReplyID="{data["replyID"]}";').fetchall()
+    resp = {"success": True}
+    return jsonify(resp)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -153,21 +159,6 @@ def updatePassword():
     return jsonify(resp)
 
 
-
-    if(not result):
-        resp = CURSOR.execute(
-            f'INSERT INTO User VALUES ("{userID}", "{data["email"]}", "{data["name"]}", "0", "{data["password"]}");').fetchall()
-
-        sessionID = getSessionID()
-        resp = CURSOR.execute(
-            f'INSERT INTO Sessions VALUES ("{sessionID}", "{userID}");').fetchall()
-
-        resp = {"success": True, "sessionID": sessionID,
-                "userID": userID, "name": data["name"]}
-        print("response: ", resp)
-        return jsonify(resp)
-    resp = {"success": False, "msg": "User already exists"}
-    return jsonify(resp)
-
+    
 if __name__ == "__main__":
     app.run(threaded=False)
