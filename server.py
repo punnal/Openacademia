@@ -144,6 +144,13 @@ def updatePassword():
             CURSOR.execute(
                 f'UPDATE User SET password={data["newPassword"]} WHERE userID="{data["userID"]}";').fetchall()
 
+            resp = {"success": True,
+                    "msg": "Sucess"}
+            return jsonify(resp)
+
+    resp = {"success": False,
+            "msg": "Some error occured"}
+    return jsonify(resp)
 
 
 
