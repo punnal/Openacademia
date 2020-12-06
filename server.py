@@ -138,21 +138,21 @@ def updatePassword():
     data = (json.loads(data))["data"]
     print("data: ", data)
 
+    # result = CURSOR.execute(
+    #     f'SELECT sessionID FROM Sessions WHERE userID="{data["userID"]}"').fetchall()
+    # print(result)
+
+    # if(result and result == data["sessionID"]):
     result = CURSOR.execute(
-        f'SELECT sessionID FROM Sessions WHERE userID="{data["userID"]}"').fetchall()
+        f'SELECT password FROM User WHERE userID="{data["userID"]}"').fetchall()
     print(result)
+    if(result and result == data["password"]):
+        CURSOR.execute(
+            f'UPDATE User SET password={data["newPassword"]} WHERE userID="{data["userID"]}";').fetchall()
 
-    if(result and result == data["sessionID"]):
-        result = CURSOR.execute(
-            f'SELECT password FROM User WHERE userID="{data["userID"]}"').fetchall()
-        print(result)
-        if(result and result == data["password"]):
-            CURSOR.execute(
-                f'UPDATE User SET password={data["newPassword"]} WHERE userID="{data["userID"]}";').fetchall()
-
-            resp = {"success": True,
-                    "msg": "Sucess"}
-            return jsonify(resp)
+        resp = {"success": True,
+                "msg": "Sucess"}
+        return jsonify(resp)
 
     resp = {"success": False,
             "msg": "Some error occured"}
