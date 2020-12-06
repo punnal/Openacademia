@@ -14,8 +14,8 @@ Search papers by author name | :heavy_check_mark:
 Search papers by conference | :heavy_check_mark:
 Sign in | :heavy_check_mark:
 Sign up | :heavy_check_mark:
-Write reviews | :x:
-Response to a review | :x:
+Write reviews | :heavy_check_mark:
+Response to a review | :heavy_check_mark:
 Delete a review/response | :x:
 Edit a review/response | :x:
 Sort by date | :heavy_check_mark:
