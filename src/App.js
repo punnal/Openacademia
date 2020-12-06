@@ -354,6 +354,7 @@ const ProfilePage = (props) => {
     <>
       <h1 className="text-muted"> {props.name}'s Papers </h1>
       <TableQuery
+        onRowClick={(row) => props.onRowClick(row)}
         query={`SELECT * FROM Paper WHERE UserID = (SELECT UserID FROM User WHERE Email = '${props.email}')`}
       />
     </>
@@ -372,15 +373,14 @@ const Reply = (props) => {
     </div>
   );
 };
-const ReplyThread = (props) => {
+
+const CommentBox = (props) => {
   const [reply, setReply] = useState("");
-  console.log("Signed in as ", Cookie.get("user"));
+  const paperid = props.paperid;
+  const parentid = props.parent;
+  const userid = props.userid;
   return (
     <>
-      <h2 className="text-muted">Replies</h2>
-      {props.replies.map((reply, id) => (
-        <Reply key={id} reply={reply} />
-      ))}
       <Form inline>
         <FormControl
           type="text"
@@ -389,10 +389,47 @@ const ReplyThread = (props) => {
           className="mr-sm-2"
           value={reply}
         />
-        <Button variant="outline-info" onClick={() => props.onReply(reply)}>
-          Search
-        </Button>
+        <ReplyButton
+          parent={props.parent}
+          onClick={() => sendReply(parentid, reply, userid, parentid)}
+        />
       </Form>
+    </>
+  );
+};
+const sendReply = (parentID, text, userid, paperid) => {
+  dbPush(
+    "/reply",
+    { reply: text, userId: userid, paperID: paperid, parentID: parentID },
+    (json) => console.log("reply posted", json)
+  );
+};
+const ReplyButton = (props) => {
+  return (
+    <>
+      <Button variant="outline-info" onClick={() => props.onClick()}>
+        {props.parent}
+      </Button>
+    </>
+  );
+};
+const ReplyThread = (props) => {
+  return (
+    <>
+      <h2 className="text-muted">Replies</h2>
+      {props.replies.map((reply, id) => (
+        <>
+          <Reply key={id} reply={reply} />
+          {props.signedIn ? (
+            <CommentBox
+              id={Cookie.get("id")}
+              parent={reply[0]}
+              paperid={props.paperid}
+              userid={props.userid}
+            />
+          ) : null}
+        </>
+      ))}
     </>
   );
 };
@@ -419,6 +456,9 @@ const PaperPage = (props) => {
     <>
       <h1 className="text-muted"> {props.id} </h1>
       <ReplyThread
+        signedIn={props.signedIn}
+        paperid={props.id}
+        userid={Cookie.get("userid")}
         replies={replies}
         onReply={(comment) =>
           executeQuery(
@@ -457,7 +497,11 @@ const App = () => {
         <Switch>
           <Route exact path="/">
             {loggedIn ? (
-              <ProfilePage name={username} email={email} />
+              <ProfilePage
+                onRowClick={onRowClick}
+                name={username}
+                email={email}
+              />
             ) : rowClicked ? (
               <Redirect to={`/paper/${rowClicked}`} />
             ) : (
@@ -478,7 +522,7 @@ const App = () => {
             </div>
           </Route>
           <Route path="/paper">
-            <PaperPage id={rowClicked} />
+            <PaperPage id={rowClicked} signedIn={loggedIn} />
           </Route>
         </Switch>
       </Router>
