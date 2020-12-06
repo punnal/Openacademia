@@ -7,7 +7,7 @@ const RowCell = (props) => {
 const Row = (props) => {
   console.log(props.row);
   return (
-    <tr>
+    <tr onClick={() => props.onRowClick(props.id)}>
       {props.row.map((attr, id) => (
         <RowCell key={id} attr={attr} />
       ))}
@@ -27,7 +27,7 @@ const Table = (props) => {
       </thead>
       <tbody>
         {props.rows.map((row, id) => (
-          <Row key={id} row={row} />
+          <Row key={id} id={id} row={row} onRowClick={props.onRowClick} />
         ))}
       </tbody>
     </BTable>

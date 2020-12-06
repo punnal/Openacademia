@@ -15,7 +15,13 @@ import dbPush from "./dbPush";
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useLocation,
+  Redirect,
+} from "react-router-dom";
 
 const Logo = () => {
   return <img src={logo} className="App-logo" alt="logo" />;
@@ -241,11 +247,22 @@ const DateBar = (props) => {
   );
 };
 
-const onRowClick = (row) => {};
-const HomePage = () => {
+const HomePage = (props) => {
+  const [success, setSuccess] = useState(false);
   const [rows, setRows] = useState([]);
+  const [cols, setCols] = useState([]);
   const attrs = "*";
   const table = "FullPaper";
+
+  useEffect(() => {
+    executeQuery(`SELECT ${attrs} FROM ${table}`, (json) => {
+      setRows(json.rows);
+      setCols(json.columns);
+      setSuccess(true);
+      console.log(json.columns);
+    });
+  }, []);
+
   return (
     <>
       <SearchBar
@@ -288,7 +305,14 @@ const HomePage = () => {
           )
         }
       />
-      <TableQuery query={`SELECT ${attrs} FROM ${table}`} />
+      {success && (
+        <Table
+          className="App-header"
+          cols={cols}
+          rows={rows}
+          onRowClick={(row) => props.onRowClick(rows[row][0])}
+        />
+      )}
     </>
   );
 };
@@ -313,7 +337,7 @@ const TableQuery = (props) => {
           className="App-header"
           cols={cols}
           rows={rows}
-          onRowClick={(row) => onRowClick(row)}
+          onRowClick={(row) => props.onRowClick(row)}
         />
       )}
     </>
@@ -334,10 +358,53 @@ const ProfilePage = (props) => {
 const executeQuery = (query, callback) => {
   dbPush("/query", { query: query }, (json) => callback(json));
 };
+const Reply = (props) => {
+  return <></>;
+};
+const ReplyThread = (props) => {
+  return (
+    <>
+      {props.replies.map((reply, id) => (
+        <Reply key={id} reply={reply} />
+      ))}
+    </>
+  );
+};
+const PaperPage = (props) => {
+  const [row, setRow] = useState([]);
+  const [replies, setReplies] = useState([]);
+  useEffect(() => {
+    executeQuery(
+      `Select * from Paper where PaperID = '${props.id}'`,
+      (json) => {
+        setRow(json.rows[0]);
+        console.log("Paper recv: ", json.rows[0]);
+      }
+    );
+    executeQuery(
+      `Select * from Reply where PaperID = '${props.id}'`,
+      (json) => {
+        setReplies(json.rows);
+        console.log("Reply recv: ", json.rows);
+      }
+    );
+  }, []);
+  return (
+    <>
+      <h1 className="text-muted"> {props.id} </h1>
+      <ReplyThread replies={replies} />
+    </>
+  );
+};
 const App = () => {
   const [loggedIn, setLogin] = useState(false);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [rowClicked, onRowClick] = useState();
+
+  useEffect(() => {
+    console.log("ROW CLICKED ", rowClicked);
+  }, [rowClicked]);
 
   return (
     <div className="App">
@@ -357,8 +424,10 @@ const App = () => {
           <Route exact path="/">
             {loggedIn ? (
               <ProfilePage name={username} email={email} />
+            ) : rowClicked ? (
+              <Redirect to={`/paper/${rowClicked}`} />
             ) : (
-              <HomePage />
+              <HomePage onRowClick={onRowClick} />
             )}
           </Route>
           <Route path="/aboutus">
@@ -373,6 +442,9 @@ const App = () => {
                 review.
               </p>
             </div>
+          </Route>
+          <Route path="/paper">
+            <PaperPage id={rowClicked} />
           </Route>
         </Switch>
       </Router>
