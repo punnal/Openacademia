@@ -60,6 +60,24 @@ def reply():
     CURSOR.execute(
         f'INSERT INTO User VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
 
+@app.route('/deletereply', methods=['GET', 'POST'])
+def deleteReply():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+
+    CURSOR.execute(
+        f'DELETE FROM User WHERE ReplyID="{data["replyID"]}";').fetchall()
+
+@app.route('/updatereply', methods=['GET', 'POST'])
+def updateReply():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+
+    CURSOR.execute(
+        f'UPDATE User SET Reply={data["Reply"]}WHERE ReplyID="{data["replyID"]}";').fetchall()
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
