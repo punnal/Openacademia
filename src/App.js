@@ -128,13 +128,13 @@ const NavBar = (props) => {
         <Nav>
           {props.loggedIn ? (
             <>
-              <Navbar.Text>Signed in as: {props.username}</Navbar.Text>
-              <Nav.Link onClick={() => {
+              <Navbar.Text className="pr-3">Signed in as: {props.username}</Navbar.Text>
+              <Button variant="outline-light" onClick={() => {
                 Cookie.remove("userid")
                 Cookie.remove("name");
                 Cookie.remove("email");
                 Cookie.remove("row");
-              }} href="/logout">logout</Nav.Link>
+              }} href="/logout">logout</Button>
             </>
           ) : signUp ? (
             <Signup
@@ -426,7 +426,7 @@ const sendReply = (parentID, text, userid, paperid) => {
 const ReplyButton = (props) => {
   return (
     <>
-      <Button variant="outline-info" onClick={() => props.onClick()}>
+      <Button variant="outline-info" onClick={() => props.onClick()} href="/paper">
         {props.text}
       </Button>
     </>
@@ -473,7 +473,7 @@ const PaperPage = (props) => {
   }, []);
   return (
     <>
-      <h1 className="text-muted"> {props.id} </h1>
+      <h1 className="text-muted"> {row[1]} </h1>
       <ReplyThread
         signedIn={props.signedIn}
         paperid={props.id}
