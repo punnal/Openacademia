@@ -127,7 +127,15 @@ const NavBar = (props) => {
         </Nav>
         <Nav>
           {props.loggedIn ? (
-            <Navbar.Text>Signed in as: {props.username}</Navbar.Text>
+            <>
+              <Navbar.Text>Signed in as: {props.username}</Navbar.Text>
+              <Nav.Link onClick={() => {
+                Cookie.remove("userid")
+                Cookie.remove("name");
+                Cookie.remove("email");
+                Cookie.remove("row");
+              }} href="/logout">logout</Nav.Link>
+            </>
           ) : signUp ? (
             <Signup
               setPressed={setSignUp}
@@ -150,7 +158,7 @@ const NavBar = (props) => {
                       setSignIn(false);
                       Cookie.set("userid", json.userid);
                       Cookie.set("name", json.name);
-                      Cookie.set("email", json.name);
+                      Cookie.set("email", json.email);
                       props.setUsername(json.name);
                       props.setEmail(json.email);
                       props.setLogin(true);
@@ -162,8 +170,8 @@ const NavBar = (props) => {
               }}
             />
           ) : (
-            <SignInSignUp set={{ signUp: setSignUp, signIn: setSignIn }} />
-          )}
+                  <SignInSignUp set={{ signUp: setSignUp, signIn: setSignIn }} />
+                )}
         </Nav>
       </Navbar>
     </>
@@ -302,8 +310,7 @@ const HomePage = (props) => {
       <FilterBar
         onClick={(filter) =>
           executeQuery(
-            `SELECT ${attrs} FROM ${table} ${
-              filter !== "All" ? `WHERE Category = "${filter}"` : ``
+            `SELECT ${attrs} FROM ${table} ${filter !== "All" ? `WHERE Category = "${filter}"` : ``
             }`,
             (json) => setRows(json.rows)
           )
@@ -508,25 +515,16 @@ const App = () => {
         />
         <Switch>
           <Route exact path="/">
-            {loggedIn ? (
-              <ProfilePage
-                onRowClick={(row) => {
-                  onRowClick(row);
-                  Cookie.set("row", row);
-                }}
-                name={username}
-                email={email}
-              />
-            ) : rowClicked ? (
+            {rowClicked ? (
               <Redirect to={`/paper/${rowClicked}`} />
             ) : (
-              <HomePage
-                onRowClick={(row) => {
-                  onRowClick(row);
-                  Cookie.set("row", row);
-                }}
-              />
-            )}
+                <HomePage
+                  onRowClick={(row) => {
+                    onRowClick(row);
+                    Cookie.set("row", row);
+                  }}
+                />
+              )}
           </Route>
           <Route path="/aboutus">
             <div className="about-section">
@@ -543,6 +541,22 @@ const App = () => {
           </Route>
           <Route path="/paper">
             <PaperPage id={Cookie.get("row")} signedIn={loggedIn} />
+          </Route>
+          <Route path="/mypapers">
+            {loggedIn ? (
+              <ProfilePage
+                onRowClick={(row) => {
+                  onRowClick(row);
+                  Cookie.set("row", row);
+                }}
+                name={username}
+                email={email}
+              />
+            ) : <div className="about-section"><h1>Please Log in to view your papers</h1></div>
+            }
+          </Route>
+          <Route path="/logout">
+            <Redirect to="/" />
           </Route>
         </Switch>
       </Router>
