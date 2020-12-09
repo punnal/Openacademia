@@ -123,6 +123,7 @@ const NavBar = (props) => {
         <Nav className="mr-auto">
           <Nav.Link href="/">Home</Nav.Link>
           <Nav.Link href="/aboutus">About Us</Nav.Link>
+          <Nav.Link href="/mypapers">My Papers</Nav.Link>
         </Nav>
         <Nav>
           {props.loggedIn ? (
