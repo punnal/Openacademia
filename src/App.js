@@ -562,6 +562,7 @@ const tupleToDic = (tups) => {
 
 const updatePaperDetails = (values) => {
   console.log(values)
+  dbPush("/updatepaper", {...values}, (json) => console.log(json))
 }
 
 const MyPaper = (props) => {
@@ -645,6 +646,7 @@ const Settings = (props) => {
 
 const uploadPaper = (values) => {
   console.log("uploading ", values)
+  dbPush("/addpaper", {...values}, (json) => console.log(json))
 }
 
 const UploadPaper = (props) => {
