@@ -17,11 +17,11 @@ Sign up | :heavy_check_mark:
 Write reviews | :heavy_check_mark:
 Response to a review | :heavy_check_mark:
 Delete a review/response | :heavy_check_mark:
-Edit a review/response | :x:
+Edit a review/response | :heavy_check_mark:
 Sort by date | :heavy_check_mark:
 Filter by date | :heavy_check_mark:
 Download paper | :x: 
-Change password | :x:
+Change password | :heavy_check_mark:
 Upload paper | :x:
 View author’s own papers | :heavy_check_mark:
 Delete papers | :x:
