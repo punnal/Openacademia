@@ -201,7 +201,7 @@ def addPaper():
     CURSOR.execute(
         f'INSERT INTO Paper VALUES ("{paperID}", "{data["Title"]}", "{data["Category"]}", "{data["UserID"]}");').fetchall()
     CURSOR.execute(
-        f'INSERT INTO Publishes VALUES ("{data["UserId"]}", "{paperID}", "{data["UserId"]}", "{d1}", "{data["Conference"]}");').fetchall()
+        f'INSERT INTO Publishes VALUES ("{data["UserID"]}", "{paperID}", "{data["UserID"]}", "{d1}", "{data["Conference"]}");').fetchall()
     CURSOR.execute(
         f'INSERT INTO PDF VALUES ("{paperID}", "{data["pdf"]}");').fetchall()
     
