@@ -54,7 +54,16 @@ const categories = [
   "Economics",
   "Other",
 ];
-
+const onPDFAdd = (event, callback) => {
+  let file = event.target.files[0]
+  var reader = new FileReader()
+  let dataurl = ''
+  reader.onload = () => {
+      dataurl = reader.result
+      callback(dataurl)
+  }
+  reader.readAsDataURL(file)
+}
 const MakeForm = (props) => {
   const formJson = props.json
   const onSubmit = props.onSubmit
@@ -71,17 +80,18 @@ const MakeForm = (props) => {
     <>
       <Form onSubmit={formik.handleSubmit}>
         {Object.keys(formJson).map((name, i) => {
-          console.log("mapping", name, formik)
           return (
             <FormControl
               key={i}
               id={name}
               name={name}
+              placeholder={name}
               onChange={formik.handleChange}
               value={formik.values[name] || formJson[name]}
               disabled={name === "PaperID"}
             />)
         })}
+        {(props.upload)? <Form.File id="pdf" label="Upload PDF" onChange={(e) => onPDFAdd(e, (url) => formik.values.pdf = url)}/> : null}
         <Button type="submit">{props.button}</Button>
       </Form>
     </>
@@ -152,12 +162,13 @@ const NavBar = (props) => {
   const [signIn, setSignIn] = useState(false);
   return (
     <>
-      <Navbar bg="dark" variant="dark">
+      <Navbar bg="dark" variant="dark" onClick={() => Cookie.remove("row")}>
         <Navbar.Brand href="/"></Navbar.Brand>
         <Nav className="mr-auto">
           <Nav.Link href="/">Home</Nav.Link>
           <Nav.Link href="/aboutus">About Us</Nav.Link>
           <Nav.Link href="/mypapers">My Papers</Nav.Link>
+          <Nav.Link href="/uploadpaper">Upload</Nav.Link>
         </Nav>
         <Nav>
           {props.loggedIn ? (
@@ -430,7 +441,7 @@ const Reply = (props) => {
 
 const updateReply = (uid, rid, reply) => {
   console.log("reply update", uid, rid, reply)
-  dbPush("/updatereply", {Reply:reply, replyID:rid}, (json) => {
+  dbPush("/updatereply", { Reply: reply, replyID: rid }, (json) => {
     console.log("updatereply: ", json)
   })
 }
@@ -455,9 +466,9 @@ const CommentBox = (props) => {
           text="Reply"
           onClick={() => sendReply(parentid, reply, userid, paperid)}
         />
-        { (userid == commentuid)?
-        <ReplyButton text="Update" onClick={() => updateReply(userid, parentid, reply)}/>
-: null}
+        {(userid == commentuid) ?
+          <ReplyButton text="Update" onClick={() => updateReply(userid, parentid, reply)} />
+          : null}
       </Form>
     </>
   );
@@ -548,6 +559,11 @@ const tupleToDic = (tups) => {
   console.log("tups2dic", dict)
   return dict
 }
+
+const updatePaperDetails = (values) => {
+  console.log(values)
+}
+
 const MyPaper = (props) => {
   // Cookie.remove("row")
   const paperid = props.id;
@@ -569,14 +585,15 @@ const MyPaper = (props) => {
         heading="Paper Details"
         button="Change"
         onSubmit={(values) => {
-          console.log("CHANGES: ", values)
+          updatePaperDetails(values)
         }}
       />
+      <Button href="/mypapers" onClick={() => Cookie.remove("row")}>Back</Button>
     </div>
   )
 }
 const updatePassword = (id, old, newPwd) => {
-  dbPush("/updatepassword", {"userID": id, "password":old, "newPassword":newPwd}, (json) => {
+  dbPush("/updatepassword", { "userID": id, "password": old, "newPassword": newPwd }, (json) => {
     console.log(json)
   })
 }
@@ -588,10 +605,10 @@ const Settings = (props) => {
   })
 
   const formik = useFormik({
-    validationSchema:schema,
+    validationSchema: schema,
     initialValues: {
       pwd1: "",
-      opwd:"",
+      opwd: "",
     },
 
     onSubmit: (values) => {
@@ -603,27 +620,47 @@ const Settings = (props) => {
   return (<div className="about-section">
     <h1>Settings for {props.name}</h1>
     <Form onSubmit={formik.handleSubmit}>
-    <FormControl
-              id="old"
-              placeholder="Old Password"
-              name="opwd"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.opwd}
-            />
-    <Form.Group controlId="validationFormik01">
-            <FormControl
-              placeholder="New Password"
-              name="pwd1"
-              type="password"
-              onChange={formik.handleChange}
-              value={formik.values.pwd1}
-            />
-            <FormControl.Feedback type="invalid">Does not meet requirements</FormControl.Feedback>
-            </Form.Group>
-        <Button type="submit">Change Password</Button>
-      </Form>
+      <FormControl
+        id="old"
+        placeholder="Old Password"
+        name="opwd"
+        type="password"
+        onChange={formik.handleChange}
+        value={formik.values.opwd}
+      />
+      <Form.Group controlId="validationFormik01">
+        <FormControl
+          placeholder="New Password"
+          name="pwd1"
+          type="password"
+          onChange={formik.handleChange}
+          value={formik.values.pwd1}
+        />
+        <FormControl.Feedback type="invalid">Does not meet requirements</FormControl.Feedback>
+      </Form.Group>
+      <Button type="submit">Change Password</Button>
+    </Form>
   </div>);
+}
+
+const uploadPaper = (values) => {
+  console.log("uploading ", values)
+}
+
+const UploadPaper = (props) => {
+  const userid = props.userid;
+  return (
+    <div className="about-section">
+      <MakeForm json={{Title:"", Conference:"", Category:""}}
+        heading="Paper Details"
+        button="Upload"
+        upload
+        onSubmit={(values) => {
+          uploadPaper({...values, UserID:userid})
+        }}
+      />
+    </div>
+  )
 }
 
 const App = () => {
@@ -706,6 +743,11 @@ const App = () => {
           </Route>
           <Route path="/settings">
             <Settings name={Cookie.get("name")} id={Cookie.get("userid")} />
+          </Route>
+          <Route path="/uploadpaper">
+            <UploadPaper
+              userid={Cookie.get("userid")}
+            />
           </Route>
         </Switch>
       </Router>
