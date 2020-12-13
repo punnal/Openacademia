@@ -171,6 +171,11 @@ def updatePaper():
     
     CURSOR.execute(
         f'UPDATE Paper SET Title="{data["Title"]}", Category="{data["Category"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
+
+    if(data["pdf"]):
+        CURSOR.execute(
+            f'UPDATE PDF SET File="{data["pdf"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
+
     resp = {"success": True}
     return jsonify(resp)
 
