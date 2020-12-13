@@ -170,7 +170,7 @@ def updatePaper():
         f'UPDATE Publishes SET Conference="{data["Conference"]}", Date="{d1}" WHERE PaperID="{data["PaperID"]}";').fetchall()
     
     CURSOR.execute(
-        f'UPDATE Paper SET Title="{data["Title"]}, Category="{data["Category"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
+        f'UPDATE Paper SET Title="{data["Title"]}", Category="{data["Category"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
     resp = {"success": True}
     return jsonify(resp)
 
