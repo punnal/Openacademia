@@ -3,6 +3,7 @@ import Modal from "react-bootstrap/Modal";
 import { useFormik } from "formik";
 import Table from "./Table";
 import Button from "react-bootstrap/Button";
+import Card from "react-bootstrap/Card";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Navbar from "react-bootstrap/Navbar";
 import Form from "react-bootstrap/Form";
@@ -59,8 +60,8 @@ const onPDFAdd = (event, callback) => {
   var reader = new FileReader()
   let dataurl = ''
   reader.onload = () => {
-      dataurl = reader.result
-      callback(dataurl)
+    dataurl = reader.result
+    callback(dataurl)
   }
   reader.readAsDataURL(file)
 }
@@ -85,13 +86,13 @@ const MakeForm = (props) => {
               key={i}
               id={name}
               name={name}
-              placeholder={name}
+              placeholder={(props.upload) ? name : formJson[name]}
               onChange={formik.handleChange}
-              value={formik.values[name] || formJson[name]}
+              value={formik.values[name]}
               disabled={name === "PaperID"}
             />)
         })}
-        {(props.upload)? <Form.File id="pdf" label="Upload PDF" onChange={(e) => onPDFAdd(e, (url) => formik.values.pdf = url)}/> : null}
+        <Form.File id="pdf" label="Upload PDF" onChange={(e) => onPDFAdd(e, (url) => formik.values.pdf = url)} />
         <Button type="submit">{props.button}</Button>
       </Form>
     </>
@@ -428,13 +429,26 @@ const Reply = (props) => {
   const parentid = props.reply[4];
   const thisuser = Cookie.get("userid");
   return (
+
     <div>
-      <p className="text-muted">
-        {replyid} | ^{parentid} | {userid} {"-->"} {props.reply[1]}
-      </p>
-      {thisuser === userid ? (
+      <Card style={{ width: '18rem' }}>
+        <Card.Body>
+          <Card.Title>User: {userid} </Card.Title>
+          <Card.Subtitle className="mb-2 text-muted">Reply to: {parentid} </Card.Subtitle>
+          <Card.Text>
+            {props.reply[1]}
+    </Card.Text>
+        </Card.Body>
+        <Card.Footer>
+        {thisuser === userid ? (
         <ReplyButton text="Delete" onClick={() => deleteReply(replyid)} />
       ) : null}
+        </Card.Footer>
+      </Card>
+      {/* <p className="text-muted">
+        {replyid} | ^{parentid} | {userid} {"-->"} {props.reply[1]}
+      </p> */}
+      
     </div>
   );
 };
@@ -466,7 +480,7 @@ const CommentBox = (props) => {
           text="Reply"
           onClick={() => sendReply(parentid, reply, userid, paperid)}
         />
-        {(userid == commentuid) ?
+        {(userid == commentuid && !props.root) ?
           <ReplyButton text="Update" onClick={() => updateReply(userid, parentid, reply)} />
           : null}
       </Form>
@@ -493,6 +507,14 @@ const ReplyThread = (props) => {
   return (
     <>
       <h2 className="text-muted">Replies</h2>
+      <CommentBox
+        root
+        id={Cookie.get("id")}
+        parent={props.paperid}
+        commentuid={props.userid}
+        paperid={props.paperid}
+        userid={props.userid}
+      />
       {props.replies.map((reply, id) => (
         <>
           <Reply key={`${id}_parent`} reply={reply} />
@@ -514,6 +536,7 @@ const ReplyThread = (props) => {
 const PaperPage = (props) => {
   const [row, setRow] = useState([]);
   const [replies, setReplies] = useState([]);
+  const [file, setFile] = useState("")
   useEffect(() => {
     executeQuery(
       `Select * from Paper where PaperID = '${props.id}'`,
@@ -529,10 +552,18 @@ const PaperPage = (props) => {
         console.log("Reply recv: ", json.rows);
       }
     );
+    executeQuery(
+      `Select File from PDF where PaperID = '${props.id}'`,
+      (json) => {
+        setFile(json.rows[0]);
+        console.log("File recv: ", json.rows);
+      }
+    );
   }, []);
   return (
     <>
       <h1 className="text-muted"> {row[1]} </h1>
+      <Button onClick={() => downloadURI(file, row[1])}>Download Paper</Button>
       <ReplyThread
         signedIn={props.signedIn}
         paperid={props.id}
@@ -562,11 +593,25 @@ const tupleToDic = (tups) => {
 
 const updatePaperDetails = (values) => {
   console.log(values)
-  dbPush("/updatepaper", {...values}, (json) => console.log(json))
+  dbPush("/updatepaper", { ...values }, (json) => console.log(json))
+}
+
+const deletePaper = (paperid) => {
+  dbPush("/deletepaper", { PaperID: paperid }, (json) => {
+    console.log("deletepaper: ", json)
+  })
+}
+
+const downloadURI = (uri, name) => {
+  var link = document.createElement("a");
+  link.download = name;
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 const MyPaper = (props) => {
-  // Cookie.remove("row")
   const paperid = props.id;
   const attrs = "*"
   const table = "FullPaper"
@@ -590,6 +635,10 @@ const MyPaper = (props) => {
         }}
       />
       <Button href="/mypapers" onClick={() => Cookie.remove("row")}>Back</Button>
+      <Button href="/mypapers" onClick={() => {
+        deletePaper(props.id)
+        Cookie.remove("row")
+      }}>Delete</Button>
     </div>
   )
 }
@@ -646,19 +695,19 @@ const Settings = (props) => {
 
 const uploadPaper = (values) => {
   console.log("uploading ", values)
-  dbPush("/addpaper", {...values}, (json) => console.log(json))
+  dbPush("/addpaper", { ...values }, (json) => console.log(json))
 }
 
 const UploadPaper = (props) => {
   const userid = props.userid;
   return (
     <div className="about-section">
-      <MakeForm json={{Title:"", Conference:"", Category:""}}
+      <MakeForm json={{ Title: "", Conference: "", Category: "" }}
         heading="Paper Details"
         button="Upload"
         upload
         onSubmit={(values) => {
-          uploadPaper({...values, UserID:userid})
+          uploadPaper({ ...values, UserID: userid })
         }}
       />
     </div>
