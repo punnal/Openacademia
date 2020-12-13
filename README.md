@@ -24,5 +24,5 @@ Download paper | :x:
 Change password | :heavy_check_mark:
 Upload paper | :x:
 View author’s own papers | :heavy_check_mark:
-Delete papers | :x:
-Edit paper details | :x:
+Delete papers | :heavy_check_mark:
+Edit paper details | :heavy_check_mark:
