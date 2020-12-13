@@ -188,11 +188,27 @@ def deletePaper():
     resp = {"success": True}
     return jsonify(resp)
 
+@app.route('/addpaper', methods=['GET', 'POST'])
+def addPaper():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
     
-if __name__ == "__main__":
-    app.run(threaded=False)
+    paperID = getID()
+    today = date.today()
+    d1 = today.strftime("%Y-%m-%d")
+
+    CURSOR.execute(
+        f'INSERT INTO Paper VALUES ("{paperID}", "{data["Title"]}", "{data["Category"]}", "{data["UserID"]}");').fetchall()
+    CURSOR.execute(
+        f'INSERT INTO Publishes VALUES ("{data["UserId"]}", "{paperID}", "{data["UserId"]}", "{d1}", "{data["Conference"]}");').fetchall()
+    CURSOR.execute(
+        f'INSERT INTO PDF VALUES ("{paperID}", "{data["pdf"]}");').fetchall()
+    
     resp = {"success": True}
     return jsonify(resp)
+
+   
 
     
 if __name__ == "__main__":
