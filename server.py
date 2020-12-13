@@ -80,7 +80,7 @@ def updateReply():
     print("data: ", data)
 
     CURSOR.execute(
-        f'UPDATE Reply SET Reply={data["Reply"]} WHERE ReplyID="{data["replyID"]}";').fetchall()
+        f'UPDATE Reply SET Reply="{data["Reply"]}" WHERE ReplyID="{data["replyID"]}";').fetchall()
     resp = {"success": True}
     return jsonify(resp)
 
@@ -144,11 +144,11 @@ def updatePassword():
 
     # if(result and result == data["sessionID"]):
     result = CURSOR.execute(
-        f'SELECT password FROM User WHERE userID="{data["userID"]}"').fetchall()
+        f'SELECT password FROM User WHERE userID="{data["userID"]}"').fetchall()[0][0]
     print(result)
     if(result and result == data["password"]):
         CURSOR.execute(
-            f'UPDATE User SET password={data["newPassword"]} WHERE userID="{data["userID"]}";').fetchall()
+            f'UPDATE User SET password="{data["newPassword"]}" WHERE userID="{data["userID"]}";').fetchall()
 
         resp = {"success": True,
                 "msg": "Sucess"}

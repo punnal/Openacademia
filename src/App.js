@@ -12,6 +12,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Nav from "react-bootstrap/Nav";
 import Signup from "./Signup";
 import dbPush from "./dbPush";
+import * as yup from "yup"
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect } from "react";
@@ -54,6 +55,39 @@ const categories = [
   "Other",
 ];
 
+const MakeForm = (props) => {
+  const formJson = props.json
+  const onSubmit = props.onSubmit
+  const formik = useFormik({
+    initialValues: {
+      ...formJson,
+    },
+
+    onSubmit: (values) => {
+      onSubmit({ ...formJson, ...values })
+    },
+  });
+  return (
+    <>
+      <Form onSubmit={formik.handleSubmit}>
+        {Object.keys(formJson).map((name, i) => {
+          console.log("mapping", name, formik)
+          return (
+            <FormControl
+              key={i}
+              id={name}
+              name={name}
+              onChange={formik.handleChange}
+              value={formik.values[name] || formJson[name]}
+              disabled={name === "PaperID"}
+            />)
+        })}
+        <Button type="submit">{props.button}</Button>
+      </Form>
+    </>
+  );
+};
+
 const SignIn = (props) => {
   const formik = useFormik({
     initialValues: {
@@ -73,7 +107,7 @@ const SignIn = (props) => {
 
       <Modal.Body></Modal.Body>
 
-      <Form onSubmit={formik.handleSubmit}>
+      <Form enableReinitialize onSubmit={formik.handleSubmit}>
         <FormControl
           id="email"
           name="email"
@@ -128,7 +162,8 @@ const NavBar = (props) => {
         <Nav>
           {props.loggedIn ? (
             <>
-              <Navbar.Text className="pr-3">Signed in as: {props.username}</Navbar.Text>
+              <Navbar.Text >Signed in as: </Navbar.Text>
+              <Nav.Link href="/settings">{props.username}</Nav.Link>
               <Button variant="outline-light" onClick={() => {
                 Cookie.remove("userid")
                 Cookie.remove("name");
@@ -348,7 +383,7 @@ const TableQuery = (props) => {
           className="App-header"
           cols={cols}
           rows={rows}
-          onRowClick={(row) => props.onRowClick(row)}
+          onRowClick={(row) => props.onRowClick(rows[row])}
         />
       )}
     </>
@@ -384,7 +419,7 @@ const Reply = (props) => {
   return (
     <div>
       <p className="text-muted">
-        {replyid} | ^{parentid} | {userid} --> {props.reply[1]}
+        {replyid} | ^{parentid} | {userid} {"-->"} {props.reply[1]}
       </p>
       {thisuser === userid ? (
         <ReplyButton text="Delete" onClick={() => deleteReply(replyid)} />
@@ -393,11 +428,19 @@ const Reply = (props) => {
   );
 };
 
+const updateReply = (uid, rid, reply) => {
+  console.log("reply update", uid, rid, reply)
+  dbPush("/updatereply", {Reply:reply, replyID:rid}, (json) => {
+    console.log("updatereply: ", json)
+  })
+}
+
 const CommentBox = (props) => {
   const [reply, setReply] = useState("");
   const paperid = props.paperid;
   const parentid = props.parent;
   const userid = props.userid;
+  const commentuid = props.commentuid;
   return (
     <>
       <Form inline>
@@ -412,6 +455,9 @@ const CommentBox = (props) => {
           text="Reply"
           onClick={() => sendReply(parentid, reply, userid, paperid)}
         />
+        { (userid == commentuid)?
+        <ReplyButton text="Update" onClick={() => updateReply(userid, parentid, reply)}/>
+: null}
       </Form>
     </>
   );
@@ -438,11 +484,13 @@ const ReplyThread = (props) => {
       <h2 className="text-muted">Replies</h2>
       {props.replies.map((reply, id) => (
         <>
-          <Reply key={id} reply={reply} />
+          <Reply key={`${id}_parent`} reply={reply} />
           {props.signedIn ? (
             <CommentBox
+              key={`${id}_child`}
               id={Cookie.get("id")}
               parent={reply[0]}
+              commentuid={reply[2]}
               paperid={props.paperid}
               userid={props.userid}
             />
@@ -489,6 +537,95 @@ const PaperPage = (props) => {
     </>
   );
 };
+const zip = (a, b) => {
+  return a.map((e, i) => [e, b[i]])
+}
+const tupleToDic = (tups) => {
+  let dict = {}
+  tups.forEach(([k, v]) => {
+    dict = { ...dict, [k]: v }
+  })
+  console.log("tups2dic", dict)
+  return dict
+}
+const MyPaper = (props) => {
+  // Cookie.remove("row")
+  const paperid = props.id;
+  const attrs = "*"
+  const table = "FullPaper"
+  const [row, setRow] = useState([])
+  const [cols, setCols] = useState([])
+  console.log("ID: ", paperid)
+  useEffect(() => {
+    executeQuery(`SELECT ${attrs} FROM ${table} WHERE PaperID="${props.id}"`, (json) => {
+      setRow(json.rows[0]);
+      setCols(json.columns);
+      console.log(json.columns);
+    });
+  }, []);
+  return (
+    <div className="about-section">
+      <MakeForm json={tupleToDic(zip(cols, row))}
+        heading="Paper Details"
+        button="Change"
+        onSubmit={(values) => {
+          console.log("CHANGES: ", values)
+        }}
+      />
+    </div>
+  )
+}
+const updatePassword = (id, old, newPwd) => {
+  dbPush("/updatepassword", {"userID": id, "password":old, "newPassword":newPwd}, (json) => {
+    console.log(json)
+  })
+}
+const Settings = (props) => {
+  const userID = props.id;
+
+  const schema = yup.object({
+    pwd1: yup.string().required().min(8)
+  })
+
+  const formik = useFormik({
+    validationSchema:schema,
+    initialValues: {
+      pwd1: "",
+      opwd:"",
+    },
+
+    onSubmit: (values) => {
+      updatePassword(userID, values.opwd, values.pwd1)
+    },
+  });
+
+
+  return (<div className="about-section">
+    <h1>Settings for {props.name}</h1>
+    <Form onSubmit={formik.handleSubmit}>
+    <FormControl
+              id="old"
+              placeholder="Old Password"
+              name="opwd"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.opwd}
+            />
+    <Form.Group controlId="validationFormik01">
+            <FormControl
+              placeholder="New Password"
+              name="pwd1"
+              type="password"
+              onChange={formik.handleChange}
+              value={formik.values.pwd1}
+            />
+            <FormControl.Feedback type="invalid">Does not meet requirements</FormControl.Feedback>
+            </Form.Group>
+        <Button type="submit">Change Password</Button>
+      </Form>
+  </div>);
+}
+
 const App = () => {
   const [loggedIn, setLogin] = useState(Cookie.get("userid") ? true : false);
   const [username, setUsername] = useState(Cookie.get("name"));
@@ -543,20 +680,32 @@ const App = () => {
             <PaperPage id={Cookie.get("row")} signedIn={loggedIn} />
           </Route>
           <Route path="/mypapers">
-            {loggedIn ? (
-              <ProfilePage
-                onRowClick={(row) => {
-                  onRowClick(row);
-                  Cookie.set("row", row);
-                }}
-                name={username}
-                email={email}
-              />
-            ) : <div className="about-section"><h1>Please Log in to view your papers</h1></div>
+            {!loggedIn ? (
+              <div className="about-section"><h1>Please log in to view your papers</h1></div>
+
+            ) : rowClicked !== undefined ? (
+              <Redirect to="/editpaper" />
+            ) : (
+                  <ProfilePage
+                    onRowClick={(row) => {
+                      console.log("PP RC: ", row)
+                      onRowClick(row);
+                      Cookie.set("row", row[0]);
+                    }}
+                    name={username}
+                    email={email}
+                  />
+                )
             }
           </Route>
           <Route path="/logout">
             <Redirect to="/" />
+          </Route>
+          <Route path="/editpaper">
+            <MyPaper id={Cookie.get("row")} />
+          </Route>
+          <Route path="/settings">
+            <Settings name={Cookie.get("name")} id={Cookie.get("userid")} />
           </Route>
         </Switch>
       </Router>
