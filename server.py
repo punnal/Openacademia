@@ -158,6 +158,41 @@ def updatePassword():
             "msg": "Some error occured"}
     return jsonify(resp)
 
+@app.route('/updatepaper', methods=['GET', 'POST'])
+def updatePaper():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+    today = date.today()
+    d1 = today.strftime("%Y-%m-%d")
+
+    CURSOR.execute(
+        f'UPDATE Publishes SET Conference="{data["Conference"]}", Date="{d1}" WHERE PaperID="{data["PaperID"]}";').fetchall()
+    
+    CURSOR.execute(
+        f'UPDATE Paper SET Title="{data["Title"]}, Category="{data["Category"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
+    resp = {"success": True}
+    return jsonify(resp)
+
+@app.route('/deletepaper', methods=['GET', 'POST'])
+def deletePaper():
+    data = request.data.decode('utf-8')
+    data = (json.loads(data))["data"]
+    print("data: ", data)
+
+    CURSOR.execute(
+        f'DELETE FROM Publishes WHERE PaperID="{data["PaperID"]}";').fetchall()
+    CURSOR.execute(
+        f'DELETE FROM Paper WHERE PaperID="{data["PaperID"]}";').fetchall()
+    
+    resp = {"success": True}
+    return jsonify(resp)
+
+    
+if __name__ == "__main__":
+    app.run(threaded=False)
+    resp = {"success": True}
+    return jsonify(resp)
 
     
 if __name__ == "__main__":
