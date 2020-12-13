@@ -44,6 +44,7 @@ def exec_query():
     rows = cursor.fetchall()
     resp = {"columns": names, "rows": rows}
     print("response: ", resp)
+    DB.commit()
     return jsonify(resp)
 
 
@@ -60,6 +61,7 @@ def reply():
     CURSOR.execute(
         f'INSERT INTO Reply VALUES ("{replyID}", "{data["reply"]}", "{data["userId"]}", "{data["paperID"]}", "{data["parentID"]}", "{d1}");').fetchall()
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
 @app.route('/deletereply', methods=['GET', 'POST'])
@@ -71,6 +73,7 @@ def deleteReply():
     CURSOR.execute(
         f'DELETE FROM Reply WHERE ReplyID="{data["replyID"]}";').fetchall()
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
 @app.route('/updatereply', methods=['GET', 'POST'])
@@ -82,6 +85,7 @@ def updateReply():
     CURSOR.execute(
         f'UPDATE Reply SET Reply="{data["Reply"]}" WHERE ReplyID="{data["replyID"]}";').fetchall()
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
 
@@ -107,8 +111,10 @@ def signup():
         resp = {"success": True, "sessionID": sessionID,
                 "userID": userID, "name": data["name"]}
         print("response: ", resp)
+        DB.commit()
         return jsonify(resp)
     resp = {"success": False, "msg": "User already exists"}
+    DB.commit()
     return jsonify(resp)
 
 
@@ -126,10 +132,12 @@ def signin():
         resp = {"success": True,
                 "name": result[2], "email": result[1], "userid": result[0]}
         print("response: ", resp)
+        DB.commit()
         return jsonify(resp)
     else:
         resp = {"success": False,
                 "msg": "Wrong password or account does not exists"}
+        DB.commit()
         return jsonify(resp)
 
 @app.route('/updatepassword', methods=['GET', 'POST'])
@@ -152,10 +160,12 @@ def updatePassword():
 
         resp = {"success": True,
                 "msg": "Sucess"}
+        DB.commit()
         return jsonify(resp)
 
     resp = {"success": False,
             "msg": "Some error occured"}
+    DB.commit()
     return jsonify(resp)
 
 @app.route('/updatepaper', methods=['GET', 'POST'])
@@ -177,6 +187,7 @@ def updatePaper():
             f'UPDATE PDF SET File="{data["pdf"]}" WHERE PaperID="{data["PaperID"]}";').fetchall()
 
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
 @app.route('/deletepaper', methods=['GET', 'POST'])
@@ -191,6 +202,7 @@ def deletePaper():
         f'DELETE FROM Paper WHERE PaperID="{data["PaperID"]}";').fetchall()
     
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
 @app.route('/addpaper', methods=['GET', 'POST'])
@@ -211,6 +223,7 @@ def addPaper():
         f'INSERT INTO PDF VALUES ("{paperID}", "{data["pdf"]}");').fetchall()
     
     resp = {"success": True}
+    DB.commit()
     return jsonify(resp)
 
    
